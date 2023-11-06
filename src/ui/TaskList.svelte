@@ -6,6 +6,8 @@
   import type { ISettings } from "../settings";
   import NoTaskDisplay from "./NoTaskDisplay.svelte";
   import TaskRenderer from "./TaskRenderer.svelte";
+  import HowerDisplay from "./HowerDisplay.svelte";
+  import { UnknownProject } from "../api/raw_models";
 
   export let tasks: Task[];
   export let settings: ISettings;
@@ -38,21 +40,24 @@
 
     tasksPendingClose = tasksPendingClose.filter((id) => id !== task.id);
   }
+
+  // console.log(metadata.projects.get_or_default("2297995314", UnknownProject));
 </script>
 
 {#if todos.length != 0}
+  <HowerDisplay {todos} projects={metadata.projects} />
   <ul class="contains-task-list todoist-task-list">
-    {#each todos as todo (todo.id)}
-      <TaskRenderer
-        {onClickTask}
-        {metadata}
-        {settings}
-        {api}
-        {sorting}
-        {renderProject}
-        {todo}
-      />
-    {/each}
+    <!-- {#each todos as todo (todo.id)} -->
+    <!-- <TaskRenderer -->
+    <!--   {onClickTask} -->
+    <!--   {metadata} -->
+    <!--   {settings} -->
+    <!--   {api} -->
+    <!--   {sorting} -->
+    <!--   {renderProject} -->
+    <!--   {todo} -->
+    <!-- /> -->
+    <!-- {/each} -->
   </ul>
 {:else if renderNoTaskInfo}
   <NoTaskDisplay />

@@ -13,6 +13,7 @@ export type LabelID = string;
 export class Task {
   public id: ID;
   public priority: number;
+  public duration: number;
   public content: string;
   public description: string;
   public order: number;
@@ -26,6 +27,7 @@ export class Task {
   public date?: string;
   public hasTime?: boolean;
   public rawDatetime?: Moment;
+  public createdAt: Moment;
 
   private static dateOnlyCalendarSpec: CalendarSpec = {
     sameDay: "[Today]",
@@ -45,6 +47,8 @@ export class Task {
     this.projectID = raw.project_id;
     this.sectionID = raw.section_id != null ? raw.section_id : null;
     this.labels = raw.labels;
+    this.duration = raw.duration;
+    this.createdAt = moment(raw.created_at);
 
     this.children = [];
 

@@ -10,124 +10,124 @@ import { QueryInjector } from "./query/injector";
 import { getTokenPath } from "./token";
 
 export default class TodoistPlugin extends Plugin {
-    public options: ISettings;
+  public options: ISettings;
 
-    private api: TodoistApi;
+  private api: TodoistApi;
 
-    private readonly queryInjector: QueryInjector;
+  private readonly queryInjector: QueryInjector;
 
-    constructor(app: App, pluginManifest: PluginManifest) {
-        super(app, pluginManifest);
+  constructor(app: App, pluginManifest: PluginManifest) {
+    super(app, pluginManifest);
 
-        this.options = null;
-        this.api = null;
+    this.options = null;
+    this.api = null;
 
-        SettingsInstance.subscribe((value) => {
-            debug({
-                msg: "Settings changed",
-                context: value,
-            });
+    SettingsInstance.subscribe((value) => {
+      debug({
+        msg: "Settings changed",
+        context: value,
+      });
 
-            this.options = value;
-        });
+      this.options = value;
+    });
 
-        this.queryInjector = new QueryInjector(app);
-    }
+    this.queryInjector = new QueryInjector(app);
+  }
 
-    async onload() {
-        this.registerMarkdownCodeBlockProcessor("todoist",
-            this.queryInjector.onNewBlock.bind(this.queryInjector)
-        );
-        this.addSettingTab(new SettingsTab(this.app, this));
+  async onload() {
+    this.registerMarkdownCodeBlockProcessor("todoist",
+      this.queryInjector.onNewBlock.bind(this.queryInjector)
+    );
+    this.addSettingTab(new SettingsTab(this.app, this));
 
-        this.addCommand({
-            id: "todoist-refresh-metadata",
-            name: "Refresh Metadata",
-            callback: async () => {
-                if (this.api != null) {
-                    debug("Refreshing metadata");
-                    const result = await this.api.fetchMetadata();
+    this.addCommand({
+      id: "todoist-refresh-metadata",
+      name: "Refresh Metadata",
+      callback: async () => {
+        if (this.api != null) {
+          debug("Refreshing metadata");
+          const result = await this.api.fetchMetadata();
 
-                    if (result.isErr()) {
-                        console.error(result.unwrapErr());
-                    }
-                }
-            },
-        });
-
-        this.addCommand({
-            id: "todoist-add-task",
-            name: "Add Todoist task",
-            callback: () => {
-                new CreateTaskModal(
-                    this.app,
-                    this.api,
-                    false
-                );
-            },
-        });
-
-        this.addCommand({
-            id: "todoist-add-task-current-page",
-            name: "Add Todoist task with the current page",
-            callback: () => {
-                new CreateTaskModal(
-                    this.app,
-                    this.api,
-                    true
-                );
-            },
-        });
-
-        const tokenPath = getTokenPath(app.vault);
-        try {
-            const token = await this.app.vault.adapter.read(tokenPath);
-            this.api = new TodoistApi(token);
-        } catch (e) {
-            const tokenModal = new TodoistApiTokenModal(this.app);
-            await tokenModal.waitForClose;
-            const token = tokenModal.token;
-
-            if (token.length == 0) {
-                alert(
-                    "Provided token was empty, please enter it in the settings and restart Obsidian."
-                );
-                return;
-            }
-
-            await this.app.vault.adapter.write(tokenPath, token);
-            this.api = new TodoistApi(token);
-        }
-
-        this.queryInjector.setApi(this.api);
-
-        const result = await this.api.fetchMetadata();
-
-        if (result.isErr()) {
+          if (result.isErr()) {
             console.error(result.unwrapErr());
+          }
         }
+      },
+    });
 
-        await this.loadOptions();
+    this.addCommand({
+      id: "todoist-add-task",
+      name: "Add Todoist task",
+      callback: () => {
+        new CreateTaskModal(
+          this.app,
+          this.api,
+          false
+        );
+      },
+    });
+
+    this.addCommand({
+      id: "todoist-add-task-current-page",
+      name: "Add Todoist task with the current page",
+      callback: () => {
+        new CreateTaskModal(
+          this.app,
+          this.api,
+          true
+        );
+      },
+    });
+
+    const tokenPath = getTokenPath(app.vault);
+    try {
+      const token = await this.app.vault.adapter.read(tokenPath);
+      this.api = new TodoistApi(token);
+    } catch (e) {
+      const tokenModal = new TodoistApiTokenModal(this.app);
+      await tokenModal.waitForClose;
+      const token = tokenModal.token;
+
+      if (token.length == 0) {
+        alert(
+          "Provided token was empty, please enter it in the settings and restart Obsidian."
+        );
+        return;
+      }
+
+      await this.app.vault.adapter.write(tokenPath, token);
+      this.api = new TodoistApi(token);
     }
 
-    async loadOptions(): Promise<void> {
-        const options = await this.loadData();
+    this.queryInjector.setApi(this.api);
 
-        SettingsInstance.update((old) => {
-            return {
-                ...old,
-                ...(options || {}),
-            };
-        });
+    const result = await this.api.fetchMetadata();
 
-        await this.saveData(this.options);
+    if (result.isErr()) {
+      console.error(result.unwrapErr());
     }
 
-    async writeOptions(changeOpts: (settings: ISettings) => void): Promise<void> {
-        SettingsInstance.update((old) => {
-            changeOpts(old);
-            return old;
-        });
-        await this.saveData(this.options);
-    }
+    await this.loadOptions();
+  }
+
+  async loadOptions(): Promise<void> {
+    const options = await this.loadData();
+
+    SettingsInstance.update((old) => {
+      return {
+        ...old,
+        ...(options || {}),
+      };
+    });
+
+    await this.saveData(this.options);
+  }
+
+  async writeOptions(changeOpts: (settings: ISettings) => void): Promise<void> {
+    SettingsInstance.update((old) => {
+      changeOpts(old);
+      return old;
+    });
+    await this.saveData(this.options);
+  }
 }

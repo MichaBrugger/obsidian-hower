@@ -11,6 +11,7 @@
   import type { ISettings } from "../settings";
   import DescriptionRenderer from "./DescriptionRenderer.svelte";
   import TaskList from "./TaskList.svelte";
+  import HowerDisplay from "./HowerDisplay.svelte";
 
   export let metadata: ITodoistMetadata;
   export let settings: ISettings;
@@ -165,4 +166,5 @@
       renderNoTaskInfo={false}
     />
   {/if}
+  <!-- <HowerDisplay {todo} /> -->
 </li>

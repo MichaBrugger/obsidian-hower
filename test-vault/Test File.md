@@ -1,6 +1,7 @@
 ```todoist
 {
 	"name": "Today",
-	"filter": "today"
+	filter: "view all"
 }
 ```
+

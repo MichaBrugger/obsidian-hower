@@ -28,6 +28,7 @@ export interface ITaskRaw {
   priority: number;
   content: string;
   description: string;
+  duration: number;
   order: number;
   parent_id?: ID | null;
   due?: {
@@ -35,6 +36,7 @@ export interface ITaskRaw {
     date: string | null;
     datetime?: string | null;
   };
+  created_at: string;
 }
 
 export interface IProjectRaw {
