@@ -11,7 +11,8 @@
   import type { ISettings } from "../settings";
   import DescriptionRenderer from "./DescriptionRenderer.svelte";
   import TaskList from "./TaskList.svelte";
-  import HowerDisplay from "./HowerDisplay.svelte";
+  import { focusedTodo } from "../stores";
+  import moment from "moment";
 
   export let metadata: ITodoistMetadata;
   export let settings: ISettings;
@@ -19,7 +20,12 @@
   export let sorting: string[];
   export let renderProject: boolean;
   export let onClickTask: (task: Task) => Promise<void>;
+  export let bringToFront: (task: Task) => void;
   export let todo: Task;
+  export let index: number;
+  export let height;
+  export let width;
+  let today = moment();
 
   $: isCompletable = !todo.content.startsWith("*");
   $: priorityClass = getPriorityClass(todo.priority);
@@ -108,63 +114,132 @@
       }
     );
   }
+
+  const getUrgency = (dueDate) => {
+    try {
+      return (height / 2 + dueDate.diff(today, "days") * 1.5) | 0;
+    } catch (e) {
+      return height / 2;
+    }
+  };
+
+  function handleMouseOver(todo) {
+    if ($focusedTodo === undefined || $focusedTodo !== todo.content) {
+      $focusedTodo = todo.content;
+      bringToFront(todo);
+    }
+  }
+  function handleMouseLeave() {
+    $focusedTodo = undefined;
+  }
 </script>
 
-<li
-  on:contextmenu={onClickTaskContainer}
-  transition:fade={{ duration: settings.fadeToggle ? 400 : 0 }}
-  class="task-list-item {priorityClass} {dateTimeClass}"
+<g
+  on:mouseover={() => handleMouseOver(todo)}
+  on:mouseleave={() => handleMouseLeave()}
 >
-  <div>
-    <input
-      disabled={!isCompletable}
-      data-line="1"
-      class="task-list-item-checkbox"
-      type="checkbox"
-      on:click|preventDefault={async () => {
-        await onClickTask(todo);
-      }}
-    />
-    <MarkdownRenderer class="todoist-task-content" content={sanitizedContent} />
-  </div>
-  {#if todo.description != ""}
-    <DescriptionRenderer description={todo.description} />
+  <circle
+    cx={100 + (todo.order + 1) * 30}
+    cy={getUrgency(todo.rawDatetime)}
+    r="20"
+    fill="black"
+  />
+  {#if $focusedTodo === todo.content}
+    <foreignObject
+      x={100 + (todo.order + 1) * 30}
+      y={getUrgency(todo.rawDatetime)}
+      width="200"
+      height="100"
+      class="hover-menu-container"
+    >
+      <div class="hover-menu">
+        <p>{todo.content}</p>
+        <button
+          on:click|preventDefault={async () => {
+            await onClickTask(todo);
+          }}>Complete</button
+        >
+      </div>
+    </foreignObject>
   {/if}
-  <div class="task-metadata">
-    {#if settings.renderProject && renderProject}
-      <div class="task-project">
-        {#if settings.renderProjectIcon}
-          <ProjectIcon class="task-project-icon" />
-        {/if}
-        {projectLabel}
-      </div>
-    {/if}
-    {#if settings.renderDate && todo.date}
-      <div class="task-date {dateTimeClass}">
-        {#if settings.renderDateIcon}
-          <CalendarIcon class="task-calendar-icon" />
-        {/if}
-        {todo.date}
-      </div>
-    {/if}
-    {#if settings.renderLabels && todo.labels.length > 0}
-      <div class="task-labels">
-        {#if settings.renderLabelsIcon}
-          <LabelIcon class="task-labels-icon" />
-        {/if}
-        {labels}
-      </div>
-    {/if}
-  </div>
-  {#if todo.children.length != 0}
-    <TaskList
-      tasks={todo.children}
-      {settings}
-      {api}
-      {sorting}
-      {renderProject}
-      renderNoTaskInfo={false}
-    />
-  {/if}
-  <!-- <HowerDisplay {todo} /> -->
-</li>
+</g>
+
+<!-- <li -->
+<!--   on:contextmenu={onClickTaskContainer} -->
+<!--   transition:fade={{ duration: settings.fadeToggle ? 400 : 0 }} -->
+<!--   class="task-list-item {priorityClass} {dateTimeClass}" -->
+<!-- > -->
+<!--   <div> -->
+<!--     <input -->
+<!--       disabled={!isCompletable} -->
+<!--       data-line="1" -->
+<!--       class="task-list-item-checkbox" -->
+<!--       type="checkbox" -->
+<!-- on:click|preventDefault={async () => { -->
+<!--   await onClickTask(todo); -->
+<!-- }} -->
+<!--     /> -->
+<!--     <MarkdownRenderer class="todoist-task-content" content={sanitizedContent} /> -->
+<!--   </div> -->
+<!--   {#if todo.description != ""} -->
+<!--     <DescriptionRenderer description={todo.description} /> -->
+<!--   {/if} -->
+<!--   <div class="task-metadata"> -->
+<!--     {#if settings.renderProject && renderProject} -->
+<!--       <div class="task-project"> -->
+<!--         {#if settings.renderProjectIcon} -->
+<!--           <ProjectIcon class="task-project-icon" /> -->
+<!--         {/if} -->
+<!--         {projectLabel} -->
+<!--         {index} -->
+<!--       </div> -->
+<!--     {/if} -->
+<!--     {#if settings.renderDate && todo.date} -->
+<!--       <div class="task-date {dateTimeClass}"> -->
+<!--         {#if settings.renderDateIcon} -->
+<!--           <CalendarIcon class="task-calendar-icon" /> -->
+<!--         {/if} -->
+<!--         {todo.date} -->
+<!--       </div> -->
+<!--     {/if} -->
+<!--     {#if settings.renderLabels && todo.labels.length > 0} -->
+<!--       <div class="task-labels"> -->
+<!--         {#if settings.renderLabelsIcon} -->
+<!--           <LabelIcon class="task-labels-icon" /> -->
+<!--         {/if} -->
+<!--         {labels} -->
+<!--       </div> -->
+<!--     {/if} -->
+<!--   </div> -->
+<!--   {#if todo.children.length != 0} -->
+<!--     <TaskList -->
+<!--       tasks={todo.children} -->
+<!--       {settings} -->
+<!--       {api} -->
+<!--       {sorting} -->
+<!--       {renderProject} -->
+<!--       renderNoTaskInfo={false} -->
+<!--     /> -->
+<!--   {/if} -->
+<!--   <!-- <HowerDisplay {todo} /> --> -->
+
+<!-- </li> -->
+
+<style>
+  circle {
+    opacity: 0.5;
+  }
+  .hover-menu {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    position: absolute; /* For HTML content, ensures it can be manipulated with z-index */
+    z-index: 50; /* Ensures it's above the SVG elements in terms of stacking order */
+    /* Adjust styles for your hover-menu */
+  }
+  .hover-menu-container {
+    overflow: visible; /* Ensure the menu is not clipped by the foreignObject bounds */
+  }
+</style>

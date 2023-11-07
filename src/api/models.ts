@@ -28,6 +28,12 @@ export class Task {
   public hasTime?: boolean;
   public rawDatetime?: Moment;
   public createdAt: Moment;
+  public index?: number
+  public pos?: {
+    x?: number,
+    y?: number
+  };
+  public colour?: string;
 
   private static dateOnlyCalendarSpec: CalendarSpec = {
     sameDay: "[Today]",

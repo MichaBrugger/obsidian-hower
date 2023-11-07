@@ -8,6 +8,7 @@
   import TaskRenderer from "./TaskRenderer.svelte";
   import HowerDisplay from "./HowerDisplay.svelte";
   import { UnknownProject } from "../api/raw_models";
+  import { focusedTodo, todos } from "../stores";
 
   export let tasks: Task[];
   export let settings: ISettings;
@@ -15,18 +16,20 @@
   export let sorting: string[];
   export let renderProject: boolean = true;
   export let renderNoTaskInfo: boolean = true;
+  let tasksPendingClose: ID[] = [];
+  let width: number;
+  let height: number;
 
   let metadata: ITodoistMetadata = null;
   const metadataUnsub = api.metadata.subscribe((value) => (metadata = value));
 
+  $: $todos = tasks
+    .filter((task) => !tasksPendingClose.includes(task.id))
+    .sort((first: Task, second: Task) => first.compareTo(second, sorting));
+
   onDestroy(() => {
     metadataUnsub();
   });
-
-  let tasksPendingClose: ID[] = [];
-  $: todos = tasks
-    .filter((task) => !tasksPendingClose.includes(task.id))
-    .sort((first: Task, second: Task) => first.compareTo(second, sorting));
 
   async function onClickTask(task: Task) {
     tasksPendingClose.push(task.id);
@@ -41,24 +44,52 @@
     tasksPendingClose = tasksPendingClose.filter((id) => id !== task.id);
   }
 
-  // console.log(metadata.projects.get_or_default("2297995314", UnknownProject));
+  function bringToFront(todo) {
+    $todos = $todos.filter((t) => t !== todo).concat(todo);
+  }
 </script>
 
-{#if todos.length != 0}
-  <HowerDisplay {todos} projects={metadata.projects} />
-  <ul class="contains-task-list todoist-task-list">
-    <!-- {#each todos as todo (todo.id)} -->
-    <!-- <TaskRenderer -->
-    <!--   {onClickTask} -->
-    <!--   {metadata} -->
-    <!--   {settings} -->
-    <!--   {api} -->
-    <!--   {sorting} -->
-    <!--   {renderProject} -->
-    <!--   {todo} -->
-    <!-- /> -->
-    <!-- {/each} -->
-  </ul>
-{:else if renderNoTaskInfo}
-  <NoTaskDisplay />
-{/if}
+<div bind:clientWidth={width} bind:clientHeight={height} class="container">
+  {#if $todos.length != 0}
+    {#if width && height}
+      <svg {width} {height}>
+        {#each $todos as todo, index}
+          <TaskRenderer
+            {onClickTask}
+            {bringToFront}
+            {metadata}
+            {settings}
+            {api}
+            {sorting}
+            {renderProject}
+            {todo}
+            {index}
+            {height}
+            {width}
+          />
+        {/each}
+      </svg>
+    {/if}
+  {:else if renderNoTaskInfo}
+    <NoTaskDisplay />
+  {/if}
+</div>
+
+<style>
+  .container {
+    width: 100%;
+    height: 800px;
+  }
+  svg {
+    /* fill: rgba(211, 211, 211, 0.5); */
+    fill: transparent;
+  }
+  .focusedTodo {
+    width: 100%;
+    display: flex;
+    margin-bottom: 4px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    justify-content: center;
+  }
+</style>

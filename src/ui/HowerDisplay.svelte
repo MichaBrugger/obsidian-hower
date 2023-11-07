@@ -61,23 +61,16 @@
       <!--   height={zoneHeight} -->
       <!--   todos={getZoneTodos(4)} -->
       <!-- /> -->
-      <HowerZone
-        {projects}
-        x={0}
-        y={0}
-        width={zoneWidth}
-        {height}
-        todos={urgetTodos}
-      />
-      <HowerZone
-        {projects}
-        x={zoneWidth}
-        y={0}
-        width={zoneWidth}
-        {height}
-        todos={importantTodos}
-      />
-      />
+      <!-- <HowerZone {projects} x={0} y={0} {width} {height} {todos} /> -->
+
+      <!-- <HowerZone -->
+      <!--   {projects} -->
+      <!--   x={zoneWidth} -->
+      <!--   y={0} -->
+      <!--   width={zoneWidth} -->
+      <!--   {height} -->
+      <!--   todos={importantTodos} -->
+      <!-- /> -->
     </svg>
   {:else}
     <div>Loading</div>
@@ -87,7 +80,7 @@
 <style>
   .container {
     width: 100%;
-    height: 600px;
+    height: 800px;
   }
   svg {
     /* fill: rgba(211, 211, 211, 0.5); */
