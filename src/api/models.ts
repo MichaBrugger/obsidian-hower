@@ -71,6 +71,23 @@ export class Task {
     }
   }
 
+  public getProjectLabel(metadata: ITodoistMetadata): string {
+    if (this.sectionID === null) {
+      return this.getProject(metadata).name
+    }
+
+    // formatted as "Project | Section"
+    return `${this.getProject(metadata).name} | ${this.getSection(metadata).name}`;
+  }
+
+  public getProject(metadata: ITodoistMetadata) {
+    return metadata.projects.get_or_default(this.projectID, UnknownProject);
+  }
+
+  public getSection(metadata: ITodoistMetadata): IProjectRaw {
+    return metadata.sections.get_or_default(this.sectionID, UnknownSection);
+  }
+
   public count(): number {
     return 1 + this.children.reduce((sum, task) => sum + task.count(), 0);
   }

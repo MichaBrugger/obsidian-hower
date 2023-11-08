@@ -13,6 +13,7 @@ export default class TodoistPlugin extends Plugin {
   public options: ISettings;
 
   private api: TodoistApi;
+  // private googleAPI: GoogleCalendarAPI;
 
   private readonly queryInjector: QueryInjector;
 
@@ -21,6 +22,7 @@ export default class TodoistPlugin extends Plugin {
 
     this.options = null;
     this.api = null;
+    // this.googleAPI = new GoogleCalendarAPI();
 
     SettingsInstance.subscribe((value) => {
       debug({

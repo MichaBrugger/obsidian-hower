@@ -59,26 +59,26 @@
 <!--     } -->
 <!--   } -->
 
-<!--   function onTaskComplete(todo) { -->
-<!--     console.log(todo); -->
-<!--     $focusedTodo = undefined; -->
-<!--   } -->
+<!-- function onTaskComplete(todo) { -->
+<!--   console.log(todo); -->
+<!--   $focusedTodo = undefined; -->
+<!-- } -->
 
-<!--   function bringToFront(hoveredTodo) { -->
-<!--     updatedTodos = updatedTodos -->
-<!--       .filter((t) => t !== hoveredTodo) -->
-<!--       .concat(hoveredTodo); -->
-<!--   } -->
+<!-- function bringToFront(hoveredTodo) { -->
+<!--   updatedTodos = updatedTodos -->
+<!--     .filter((t) => t !== hoveredTodo) -->
+<!--     .concat(hoveredTodo); -->
+<!-- } -->
 
-<!--   function handleMouseOver(todo) { -->
-<!--     if ($focusedTodo === undefined || $focusedTodo !== todo.content) { -->
-<!--       $focusedTodo = todo.content; -->
-<!--       bringToFront(todo); // Bring the hovered todo to the front -->
-<!--     } -->
+<!-- function handleMouseOver(todo) { -->
+<!--   if ($focusedTodo === undefined || $focusedTodo !== todo.content) { -->
+<!--     $focusedTodo = todo.content; -->
+<!--     bringToFront(todo); // Bring the hovered todo to the front -->
 <!--   } -->
-<!--   function handleMouseLeave() { -->
-<!--     $focusedTodo = undefined; -->
-<!--   } -->
+<!-- } -->
+<!-- function handleMouseLeave() { -->
+<!--   $focusedTodo = undefined; -->
+<!-- } -->
 <!-- </script> -->
 
 <!-- <rect {x} {y} {width} {height} rx="15" stroke="black" stroke-width="5px" /> -->
@@ -100,7 +100,7 @@
 <!--         <foreignObject -->
 <!--           x={todo.pos.cx} -->
 <!--           y={todo.pos.cy} -->
-<!--           width="200" -->
+<!--           wi$todos = dth="200" -->
 <!--           height="100" -->
 <!--           class="hover-menu-container" -->
 <!--         > -->

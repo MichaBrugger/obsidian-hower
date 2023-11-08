@@ -2,7 +2,11 @@
   import { fade } from "svelte/transition";
   import type { ITodoistMetadata, TodoistApi } from "../api/api";
   import type { Task } from "../api/models";
-  import { UnknownProject, UnknownSection } from "../api/raw_models";
+  import {
+    UnknownProject,
+    UnknownSection,
+    type IProjectRaw,
+  } from "../api/raw_models";
   import CalendarIcon from "../components/icons/CalendarIcon.svelte";
   import LabelIcon from "../components/icons/LabelIcon.svelte";
   import ProjectIcon from "../components/icons/ProjectIcon.svelte";
@@ -11,7 +15,7 @@
   import type { ISettings } from "../settings";
   import DescriptionRenderer from "./DescriptionRenderer.svelte";
   import TaskList from "./TaskList.svelte";
-  import { focusedTodo } from "../stores";
+  import { focusedTodo, width, height } from "../stores";
   import moment from "moment";
 
   export let metadata: ITodoistMetadata;
@@ -22,15 +26,14 @@
   export let onClickTask: (task: Task) => Promise<void>;
   export let bringToFront: (task: Task) => void;
   export let todo: Task;
-  export let index: number;
-  export let height;
-  export let width;
+  // export let height;
+  // export let width;
   let today = moment();
 
   $: isCompletable = !todo.content.startsWith("*");
-  $: priorityClass = getPriorityClass(todo.priority);
+  // $: priorityClass = getPriorityClass(todo.priority);
   $: dateTimeClass = getDateTimeClass(todo);
-  $: projectLabel = getProjectLabel(todo, metadata);
+  // $: projectLabel = getProjectLabel(todo, metadata);
   $: labels = todo.labels.join(", ");
   $: sanitizedContent = sanitizeContent(todo.content);
 
@@ -81,24 +84,6 @@
     return parts.join(" ");
   }
 
-  function getProjectLabel(todo: Task, metadata: ITodoistMetadata): string {
-    const project = metadata.projects.get_or_default(
-      todo.projectID,
-      UnknownProject
-    ).name;
-
-    if (todo.sectionID === null) {
-      return project;
-    }
-
-    const section = metadata.sections.get_or_default(
-      todo.sectionID,
-      UnknownSection
-    ).name;
-
-    return `${project} | ${section}`;
-  }
-
   function onClickTaskContainer(evt: MouseEvent) {
     evt.stopPropagation();
     evt.preventDefault();
@@ -117,9 +102,9 @@
 
   const getUrgency = (dueDate) => {
     try {
-      return (height / 2 + dueDate.diff(today, "days") * 1.5) | 0;
+      return ($height / 2 + dueDate.diff(today, "days") * 1.5) | 0;
     } catch (e) {
-      return height / 2;
+      return $height / 2;
     }
   };
 
@@ -129,6 +114,7 @@
       bringToFront(todo);
     }
   }
+
   function handleMouseLeave() {
     $focusedTodo = undefined;
   }
@@ -137,22 +123,24 @@
 <g
   on:mouseover={() => handleMouseOver(todo)}
   on:mouseleave={() => handleMouseLeave()}
+  on:focus={() => console.log(todo)}
 >
   <circle
-    cx={100 + (todo.order + 1) * 30}
+    cx={100 + (todo.order + 1) * 10}
     cy={getUrgency(todo.rawDatetime)}
-    r="20"
-    fill="black"
+    r="10"
+    fill="red"
   />
   {#if $focusedTodo === todo.content}
     <foreignObject
-      x={100 + (todo.order + 1) * 30}
+      x={100 + (todo.order + 1) * 10}
       y={getUrgency(todo.rawDatetime)}
       width="200"
       height="100"
       class="hover-menu-container"
     >
       <div class="hover-menu">
+        <h2>{todo.getProjectLabel(metadata)}</h2>
         <p>{todo.content}</p>
         <button
           on:click|preventDefault={async () => {
@@ -163,67 +151,6 @@
     </foreignObject>
   {/if}
 </g>
-
-<!-- <li -->
-<!--   on:contextmenu={onClickTaskContainer} -->
-<!--   transition:fade={{ duration: settings.fadeToggle ? 400 : 0 }} -->
-<!--   class="task-list-item {priorityClass} {dateTimeClass}" -->
-<!-- > -->
-<!--   <div> -->
-<!--     <input -->
-<!--       disabled={!isCompletable} -->
-<!--       data-line="1" -->
-<!--       class="task-list-item-checkbox" -->
-<!--       type="checkbox" -->
-<!-- on:click|preventDefault={async () => { -->
-<!--   await onClickTask(todo); -->
-<!-- }} -->
-<!--     /> -->
-<!--     <MarkdownRenderer class="todoist-task-content" content={sanitizedContent} /> -->
-<!--   </div> -->
-<!--   {#if todo.description != ""} -->
-<!--     <DescriptionRenderer description={todo.description} /> -->
-<!--   {/if} -->
-<!--   <div class="task-metadata"> -->
-<!--     {#if settings.renderProject && renderProject} -->
-<!--       <div class="task-project"> -->
-<!--         {#if settings.renderProjectIcon} -->
-<!--           <ProjectIcon class="task-project-icon" /> -->
-<!--         {/if} -->
-<!--         {projectLabel} -->
-<!--         {index} -->
-<!--       </div> -->
-<!--     {/if} -->
-<!--     {#if settings.renderDate && todo.date} -->
-<!--       <div class="task-date {dateTimeClass}"> -->
-<!--         {#if settings.renderDateIcon} -->
-<!--           <CalendarIcon class="task-calendar-icon" /> -->
-<!--         {/if} -->
-<!--         {todo.date} -->
-<!--       </div> -->
-<!--     {/if} -->
-<!--     {#if settings.renderLabels && todo.labels.length > 0} -->
-<!--       <div class="task-labels"> -->
-<!--         {#if settings.renderLabelsIcon} -->
-<!--           <LabelIcon class="task-labels-icon" /> -->
-<!--         {/if} -->
-<!--         {labels} -->
-<!--       </div> -->
-<!--     {/if} -->
-<!--   </div> -->
-<!--   {#if todo.children.length != 0} -->
-<!--     <TaskList -->
-<!--       tasks={todo.children} -->
-<!--       {settings} -->
-<!--       {api} -->
-<!--       {sorting} -->
-<!--       {renderProject} -->
-<!--       renderNoTaskInfo={false} -->
-<!--     /> -->
-<!--   {/if} -->
-<!--   <!-- <HowerDisplay {todo} /> --> -->
-
-<!-- </li> -->
 
 <style>
   circle {
